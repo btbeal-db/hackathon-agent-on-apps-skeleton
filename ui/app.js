@@ -27,73 +27,41 @@ form.addEventListener("submit", async (e) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         input: [{ role: "user", content: joke }],
-        stream: true,
       }),
     });
 
     if (!response.ok) {
-      throw new Error(`Server returned ${response.status}`);
+      const body = await response.text();
+      throw new Error(`Server returned ${response.status}: ${body}`);
     }
 
-    // The streaming endpoint returns newline-delimited JSON chunks
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = "";
-    let chunkIndex = 0;
+    const data = await response.json();
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-
-      // Process complete lines (each line is a JSON object)
-      const lines = buffer.split("\n");
-      buffer = lines.pop(); // Keep incomplete line in buffer
-
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed) continue;
-
-        // Handle SSE "data:" prefix if present
-        const jsonStr = trimmed.startsWith("data:") ? trimmed.slice(5).trim() : trimmed;
-        if (!jsonStr || jsonStr === "[DONE]") continue;
-
-        try {
-          const data = JSON.parse(jsonStr);
-          const text = extractText(data);
-          if (!text) continue;
-
-          if (chunkIndex === 0) {
-            // First chunk is always from the judge
-            judgeOutput.textContent = text;
-            const isFunny = text.toLowerCase().startsWith("funny!");
-            judgeSection.classList.add(isFunny ? "funny" : "not-funny");
-          } else {
-            // Subsequent chunks are from the rewriter
-            rewriterSection.classList.remove("hidden");
-            rewriterOutput.textContent = text;
+    // Extract text from each output item (one per graph node)
+    const texts = [];
+    if (data.output) {
+      for (const item of data.output) {
+        if (item.content) {
+          for (const block of item.content) {
+            if (block.text) texts.push(block.text);
           }
-          chunkIndex++;
-        } catch {
-          // Skip non-JSON lines
         }
       }
     }
 
-    // If we never got a streamed chunk, try parsing the full response as JSON
-    if (chunkIndex === 0 && buffer.trim()) {
-      try {
-        const data = JSON.parse(buffer.trim());
-        const text = extractText(data);
-        if (text) {
-          judgeOutput.textContent = text;
-          const isFunny = text.toLowerCase().startsWith("funny!");
-          judgeSection.classList.add(isFunny ? "funny" : "not-funny");
-        }
-      } catch {
-        // ignore
-      }
+    if (texts.length === 0) {
+      throw new Error("No response from agent");
+    }
+
+    // First text is always from the judge
+    judgeOutput.textContent = texts[0];
+    const isFunny = texts[0].toLowerCase().startsWith("funny!");
+    judgeSection.classList.add(isFunny ? "funny" : "not-funny");
+
+    // Second text (if present) is from the rewriter
+    if (texts.length > 1) {
+      rewriterSection.classList.remove("hidden");
+      rewriterOutput.textContent = texts[1];
     }
   } catch (err) {
     errorMsg.textContent = `Error: ${err.message}`;
@@ -103,24 +71,3 @@ form.addEventListener("submit", async (e) => {
     submitBtn.disabled = false;
   }
 });
-
-/**
- * Extract text from a Responses API message.
- * Handles both { output: [{ content: [{ text }] }] }
- * and flat { text } shapes.
- */
-function extractText(data) {
-  // Standard Responses API shape
-  if (data.output) {
-    for (const item of data.output) {
-      if (item.content) {
-        for (const block of item.content) {
-          if (block.text) return block.text;
-        }
-      }
-    }
-  }
-  // Fallback
-  if (data.text) return data.text;
-  return null;
-}

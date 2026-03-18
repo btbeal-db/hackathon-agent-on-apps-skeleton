@@ -169,8 +169,13 @@ async def handle_invoke(
     """Non-streaming handler registered with the AgentServer."""
     lc_messages = _to_langchain_messages(request.input)
     result = graph.invoke({"messages": lc_messages})
-    answer = result["messages"][-1].content
-    return ResponsesAgentResponse(output=[_format_output(answer)])
+    # Return all AI messages so the UI can display each graph step
+    ai_outputs = [
+        _format_output(m.content)
+        for m in result["messages"]
+        if isinstance(m, AIMessage)
+    ]
+    return ResponsesAgentResponse(output=ai_outputs or [_format_output("No response.")])
 
 
 @stream()
