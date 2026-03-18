@@ -1,0 +1,10 @@
+# Databricks App configuration
+# Docs: https://docs.databricks.com/dev-tools/databricks-apps/app-runtime/
+
+command:
+  - python
+  - start_server.py
+
+env:
+  - name: MLFLOW_EXPERIMENT_NAME
+    value: /Workspace/Users/${DATABRICKS_USER}/hackathon-agent

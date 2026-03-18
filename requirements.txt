@@ -1,0 +1,4 @@
+# Hackathon Agent App — Python dependencies
+mlflow[genai]>=3.6.0
+databricks-langchain>=0.4.0
+langgraph>=0.4.0
