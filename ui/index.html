@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Joke Review Agent</title>
+  <link rel="stylesheet" href="/ui/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Joke Review Agent</h1>
+      <p class="subtitle">Submit a joke and our AI comedy critic will judge it — and rewrite it if needed.</p>
+    </header>
+
+    <form id="joke-form">
+      <textarea
+        id="joke-input"
+        placeholder="Enter your joke here..."
+        rows="3"
+        required
+      ></textarea>
+      <button type="submit" id="submit-btn">Submit Joke</button>
+    </form>
+
+    <div id="results" class="results hidden">
+      <div id="judge-section" class="result-card hidden">
+        <h2>Judge's Verdict</h2>
+        <p id="judge-output"></p>
+      </div>
+      <div id="rewriter-section" class="result-card hidden">
+        <h2>Rewriter's Take</h2>
+        <p id="rewriter-output"></p>
+      </div>
+    </div>
+
+    <div id="error-msg" class="error hidden"></div>
+
+    <footer>
+      <p>Powered by <strong>LangGraph</strong> + <strong>MLflow AgentServer</strong> on <strong>Databricks Apps</strong></p>
+    </footer>
+  </div>
+  <script src="/ui/app.js"></script>
+</body>
+</html>

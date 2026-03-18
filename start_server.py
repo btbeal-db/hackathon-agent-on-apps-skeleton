@@ -9,8 +9,12 @@ Usage:
   python start_server.py --port 9000  # custom port
 """
 
+from pathlib import Path
+
 import agent  # noqa: F401 — triggers @invoke / @stream registration
 
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from mlflow.genai.agent_server import (
     AgentServer,
     setup_mlflow_git_based_version_tracking,
@@ -24,6 +28,17 @@ app = agent_server.app  # FastAPI app, also used by Gunicorn/Uvicorn
 
 # Optional: tie traces to git commits for reproducibility
 setup_mlflow_git_based_version_tracking()
+
+# --- Serve the UI ---
+UI_DIR = Path(__file__).parent / "ui"
+
+
+@app.get("/")
+async def serve_ui():
+    return FileResponse(UI_DIR / "index.html")
+
+
+app.mount("/ui", StaticFiles(directory=UI_DIR), name="ui")
 
 
 def main() -> None:
