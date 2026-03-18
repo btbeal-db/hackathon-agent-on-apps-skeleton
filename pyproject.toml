@@ -1,0 +1,11 @@
+[project]
+name = "hackathon-agent-on-apps-skeleton"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "mlflow[genai]>=3.6.0",
+    "databricks-langchain>=0.4.0",
+    "langgraph>=0.4.0",
+]

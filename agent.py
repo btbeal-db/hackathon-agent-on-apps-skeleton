@@ -10,6 +10,7 @@ If not, the rewriter critiques it and produces a better version
 """
 
 from typing import Any, AsyncGenerator
+from uuid import uuid4
 
 import mlflow
 from pydantic import BaseModel, Field
@@ -154,6 +155,7 @@ def _to_langchain_messages(items: list) -> list:
 def _format_output(text: str) -> dict:
     """Build a single Responses API output message."""
     return {
+        "id": f"msg_{uuid4()}",
         "type": "message",
         "role": "assistant",
         "content": [{"type": "output_text", "text": text}],

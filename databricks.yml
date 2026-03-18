@@ -1,0 +1,30 @@
+bundle:
+  name: hackathon-agent-on-apps-skeleton
+
+sync:
+  exclude:
+    - .git/**
+    - __pycache__/**
+    - .venv/**
+
+variables:
+  app_name:
+    description: Databricks app name to create or update.
+    default: hackathon-agent-skeleton
+
+resources:
+  apps:
+    hackathon_agent_app:
+      name: ${var.app_name}
+      source_code_path: .
+      description: Hackathon agent app skeleton using MLflow AgentServer.
+      permissions:
+        - level: CAN_USE
+          group_name: users
+
+targets:
+  dev:
+    default: true
+    mode: development
+    workspace:
+      host: https://fe-vm-hls-amer.cloud.databricks.com
